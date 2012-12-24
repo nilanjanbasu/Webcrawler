@@ -50,6 +50,8 @@ class TimedQueue(Queue.Queue):
 
 
 class BotRequest(Request):
+    '''Convenience class to specify number of extra headers to send'''
+
     def __init__(self, url, data='', headers={}):
         Request.__init__(self, url, data, headers)
         Request.add_header(self, 'User-Agent',
@@ -57,6 +59,8 @@ class BotRequest(Request):
 
 
 class HostURLParse:
+    '''Representative of URLs with convenience functions'''
+
     def __init__(self, url, baseurl):
     #Compulsory to include baseurl, make user acknowledge each time
 
@@ -133,7 +137,9 @@ class HostURLParse:
 
 
 class SafeDict:
-
+    '''
+    Thread safe dictionary
+    '''
     def __init__(self):
         self._dict = {}
         self.lock = Lock()
@@ -156,7 +162,9 @@ class SafeDict:
 
 
 class SafeSet:
-
+    '''
+    Thread safe set
+    '''
     def __init__(self):
         self._set = set()
         self.lock = Lock()

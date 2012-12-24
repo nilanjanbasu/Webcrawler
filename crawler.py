@@ -17,6 +17,15 @@ import os
 class Worker(threading.Thread):
 
     def __init__(self, queue, shutdown_event, hash_set, static_set, workspace, robotdict):
+        '''
+        queue : Shared Queue.Queue object containing the URLs (HostURLParse)
+        shutdown_event: theading.Event to signal termination of the program
+        hash_set: The threadsafe SafeSet to represent the visited links
+        statis_set : The threadsafe SafeSet to represent the fetched static files
+        workspace: The workspace to save files to
+        robotdict : dictionary to contain RobotFileParser for a site
+        '''
+
         threading.Thread.__init__(self)
         self.queue = queue
         self.shutdown_event = shutdown_event
@@ -150,6 +159,13 @@ class Worker(threading.Thread):
 class Controller:
 
     def __init__(self, sock_timeout, req_delay, workspace, url_obj, max_conn=5):
+        '''sock_timeout: time-out for terminating a socket connection without any reply
+           req_delay   : Delay between successive requests to a website
+           workspace   : Folder to which the mirror should be saved
+           url_obj     : An HostURLParse object representing the base URL
+           max_conn    : Maximum number of parallel threads to use'''
+
+
         ## Set up all configurations
         logging.basicConfig(level=logging.DEBUG)
         socket.setdefaulttimeout(sock_timeout)
