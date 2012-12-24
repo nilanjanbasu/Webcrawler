@@ -7,7 +7,7 @@ import urllib2
 import urlparse
 import logging
 import socket
-from lib.TimedQueue import TimedQueue, BotRequest, HostURLParse, SafeDict, SafeSet
+from lib.utils import TimedQueue, BotRequest, HostURLParse, SafeDict, SafeSet
 from robotparser import RobotFileParser
 import sys
 import re
