@@ -13,10 +13,6 @@ import sys
 import re
 import os
 
-hosts = ["http://yahoo.com", "http://google.com", "http://amazon.com",
-        "http://ibm.com", "http://apple.com"]
-
-
 
 class Worker(threading.Thread):
 
@@ -59,29 +55,9 @@ class Worker(threading.Thread):
             cached_parser.set_url(robo_url)
             cached_parser.read()
 
-        #if robo_url in self.robotdict:
-            #logging.info("Found in Cache: " + robo_url)
-            #robo_parser = self.robotdict[robo_url]
-        #else:
-            #logging.info("Fetching: " + robo_url)
-            #robo_parser = self.robotdict[robo_url] = RobotFileParser()
-            #robo_parser.set_url(robo_url)
-            #robo_parser.read()
-
         if cached_parser.can_fetch('*', host. get_url()):
             print 'Going to fetch:', host.get_url()
             return self.fetch_file(host.get_url())
-            #bot_req = BotRequest(host.get_url())
-            #try:
-                #url = urllib2.urlopen(bot_req)
-            #except urllib2.HTTPError as e:
-                #logging.info("HttpError: Response:%d Host: %s" % (e. code, host))
-                #return None
-            #except urllib2.URLError as e:
-                #logging.info("Server Unreachable: Reason %s" % (e.reason, ))
-                #return None
-            #else:
-                #return url.read()  # return the HTML
         else:
             logging.info("Forbidden by Robots.txt")
             return None
@@ -125,26 +101,6 @@ class Worker(threading.Thread):
         self.save_static_by_type(host, soup, css_files, 'href')
         self.save_static_by_type(host, soup, img_files, 'src')
         self.save_static_by_type(host, soup, js_files, 'src')
-        #all_links = css_files + img_files
-
-        #q = Queue.Queue()
-        #for link in all_links:
-            #static_url_obj = HostURLParse(link, host.get_url())
-            #if not self.static_set.in_set(static_url_obj.get_url_hash()):
-                #self.static_set.add(static_url_obj.get_url_hash())
-                #q.put(static_url_obj)
-            #else:
-                #logging.info('Found Static file: ' + static_url_obj.get_url())
-
-        #stop_event = threading.Event()
-        #if not q.empty():
-            #for i in range(5):
-                #t = threading.Thread(target=self.static_worker, args=(q,stop_event))
-                #t.setDaemon(True)
-                #t.start()
-
-            #q.join()
-            #stop_event.set()
 
     def save_static_by_type(self, host, soup, link_items, attr):
         q = Queue.Queue()
@@ -214,9 +170,6 @@ class Controller:
             t.start()
             self.workers.append(t)
 
-        #for i in hosts:
-            #print i
-            #self.queue.put(i)
         self.queue.put(self.url_obj)
 
         try:
@@ -224,16 +177,6 @@ class Controller:
         except (KeyboardInterrupt, SystemExit):
             self.shutdown_event.set()
             #Other clean up codes
-
-        #for w in self.workers:
-            #w.join()
-        #while(True):
-            #br = True
-            #for w in self.workers:
-                #if w.is_alive():
-                    #br = False
-            #if br:
-                #break
 
 if __name__ == '__main__':
     #host = HostURLParse('http://python.org/', '')
