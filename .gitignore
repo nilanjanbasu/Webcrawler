@@ -1,0 +1,4 @@
+*.pyc
+crawl/
+workspace/
+*.nja
