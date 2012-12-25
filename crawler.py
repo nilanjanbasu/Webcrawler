@@ -114,11 +114,11 @@ class Worker(threading.Thread):
         img_files = soup.findAll('img', src=True)
         js_files = soup.findAll('script', src=True)
 
-        self.save_static_by_type(host, soup, css_files, 'href')
+        self.save_static_by_type(host, soup, css_files, 'href', True)
         self.save_static_by_type(host, soup, img_files, 'src')
         self.save_static_by_type(host, soup, js_files, 'src')
 
-    def save_static_by_type(self, host, soup, link_items, attr):
+    def save_static_by_type(self, host, soup, link_items, attr, is_css = False):
         q = Queue.Queue()
         for link in link_items:
             print host.get_url()
@@ -126,27 +126,39 @@ class Worker(threading.Thread):
             if not self.static_set.in_set(static_url_obj.get_url_hash()):
                 #self.static_set.add(static_url_obj.get_url_hash())
                 q.put(static_url_obj)
-                link[attr] = os.path.join(self. workspace, static_url_obj. get_diskrelpath())
+                link[attr] = os.path.join(self.workspace, static_url_obj.get_diskrelpath())
             else:
                 logging.info('Found Static file in cache: ' + static_url_obj.get_url())
 
         stop_event = threading.Event()
         if not q.empty():
             for i in range(5):
-                t = threading.Thread(target=self.static_worker, args=(q,stop_event))
+                t = threading.Thread(target=self.static_worker, args=(q,stop_event,is_css))
                 t.setDaemon(True)
                 t.start()
 
             q.join()
             stop_event.set()
 
-    def static_worker(self, static_queue, stop_event):
+    def static_worker(self, static_queue, stop_event, is_css=False):
 
         while not stop_event.is_set():
             url_obj = static_queue.get()
             content = self.fetch_file(url_obj.get_url())
             if content:
                 self.static_set.add(url_obj.get_url_hash())
+
+                if is_css:
+                    prog = re.compile(r'url\(([a-zA-Z0-9_./]+)\)')
+                    res = prog.findall(content)
+                    for u in res:
+                        print url_obj.get_url()
+                        u_obj = HostURLParse(u, url_obj.get_url())
+                        if not self.static_set.in_set(u_obj.get_url_hash()):
+                            static_queue.put(u_obj)
+                            abs_path = os.path.join(self.workspace, u_obj.get_diskrelpath())
+                            content = re.sub(u, abs_path, content)
+
                 logging.info("Saved static file: " + url_obj.get_url())
                 self.save_file(url_obj, content)
             static_queue.task_done()
@@ -155,7 +167,10 @@ class Worker(threading.Thread):
         filepath = os.path.join(self.workspace, host.get_diskrelpath())
         print filepath
         if not os.path.exists(os.path.dirname(filepath)):
-            os.makedirs(os.path.dirname(filepath))
+            try:
+                os.makedirs(os.path.dirname(filepath))
+            except OSError:
+                pass # Directory already created in other thread
         try:
             f = open(filepath, 'w')
         except IOError:
