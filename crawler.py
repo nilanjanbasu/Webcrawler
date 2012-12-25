@@ -89,13 +89,20 @@ class Worker(threading.Thread):
     def parse_and_enque(self, host, html):
         soup = BeautifulSoup.BeautifulSoup(html)
         links = [x for x in soup.findAll('a', href=True)]
+        base = soup.find('base', href=True)
+        base_url = ''
+        if base:
+            base_url = base['href']
+            base.extract()
+        else:
+            base_url = host.get_url()
 
         for a in links:
             #print a, host.get_url()
-            urlhostp = HostURLParse(a['href'], host.get_url())
+            urlhostp = HostURLParse(a['href'], base_url)
             h = urlhostp.get_url_hash()
             if not self.hash_set.in_set(h):
-                print "Enquing", a['href'], host.get_url()
+                print "Enquing", a['href'], base_url
                 self.queue.put(urlhostp)
                 self.hash_set.add(h)
             a['href'] = os.path.join(self. workspace, urlhostp. get_diskrelpath())
